@@ -7,6 +7,11 @@ class Equirectangular:
     def __init__(self, img_name):
         self._img = cv2.imread(img_name, cv2.IMREAD_COLOR)
         [self._height, self._width, _] = self._img.shape
+        #cp = self._img.copy()  
+        #w = self._width
+        #self._img[:, :w/8, :] = cp[:, 7*w/8:, :]
+        #self._img[:, w/8:, :] = cp[:, :7*w/8, :]
+    
 
     def GetPerspective(self, FOV, THETA, PHI, height, width, RADIUS = 128):
         #
@@ -70,16 +75,15 @@ class Equirectangular:
         xyz[:, :, 1] = (RADIUS / D * y_map)[:, :]
         xyz[:, :, 2] = (RADIUS / D * z_map)[:, :]
         
-        [R, _] = cv2.Rodrigues(np.array([0, 1, 0], np.float32) * np.radians(-PHI))
-        #[R, _] = cv2.Rodrigues(np.array([0, 0, 1], np.float32) * np.radians(THETA))
+        #[R, _] = cv2.Rodrigues(np.array([0, 1, 0], np.float32) * np.radians(-PHI))
+        y_axis = np.array([0.0, 1.0, 0.0], np.float32)
+        z_axis = np.array([0.0, 0.0, 1.0], np.float32)
+        [R1, _] = cv2.Rodrigues(z_axis * np.radians(THETA))
+        [R2, _] = cv2.Rodrigues(np.dot(R1, y_axis) * np.radians(-PHI))
+
         xyz = xyz.reshape([height * width, 3]).T
-        xyz = np.dot(R, xyz).T
-        #print xyz.reshape([height, width, 3])[360, 540, 0]
-        #print y_map[0, 0]
-        #print z_map[0, 0]
-        #print xyz
-        #np.save('/Users/fu-en.wang/SandBox/pygame/t.npy', xyz)
-        #exit()
+        xyz = np.dot(R1, xyz)
+        xyz = np.dot(R2, xyz).T
         lat = np.arcsin(xyz[:, 2] / RADIUS)
         lon = np.zeros([height * width], np.float)
         theta = np.arctan(xyz[:, 1] / xyz[:, 0])
@@ -95,12 +99,6 @@ class Equirectangular:
 
         lon = lon.reshape([height, width]) / np.pi * 180
         lat = -lat.reshape([height, width]) / np.pi * 180
-        #print lon[0, :200]
-        #print theta.reshape([height, width])[0, :200]
-        #print lat
-        #print lon
-        #print lat
-        #exit()
         lon = lon / 180 * equ_cx + equ_cx
         lat = lat / 90 * equ_cy + equ_cy
         #for x in range(width):
@@ -109,7 +107,6 @@ class Equirectangular:
         #return self._img 
     
         persp = cv2.remap(self._img, lon.astype(np.float32), lat.astype(np.float32), cv2.INTER_CUBIC, borderMode=cv2.BORDER_WRAP)
-        #persp = cv2.remap(self._img, x_grid, y_grid, cv2.INTER_LINEAR)
         return persp
         
 

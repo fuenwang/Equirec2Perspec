@@ -28,37 +28,7 @@ class Equirectangular:
 
         c_x = (width - 1) / 2.0
         c_y = (height - 1) / 2.0
-        ''' 
-        wangle = (180 - wFOV) / 2.0
-        w_len = 2 * RADIUS * np.sin(np.radians(wFOV / 2.0)) / np.sin(np.radians(wangle))
-        #interval = w_len / (width - 1)
-        interval = 1
-        x_range = (np.arange(0, width) - c_x) * interval
-        x_range = np.arctan(x_range / RADIUS) / np.pi * 180
 
-        hangle = (180 - hFOV) / 2.0
-        h_len = 2 * RADIUS * np.sin(np.radians(hFOV / 2.0)) / np.sin(np.radians(hangle))
-        #interval = h_len / (height - 1)
-        interval = 1
-        y_range = (np.arange(0, height) - c_y) * interval
-        y_range = np.arctan(y_range / RADIUS) / np.pi * 180
-        #print x_range
-        #print y_range[0], y_range[-1]
-        #exit()
-        x_range += THETA
-        y_range -= PHI
-
-        x_range = x_range / 180 * equ_cx + equ_cx
-        y_range = y_range / 90 * equ_cy + equ_cy
-
-        x_grid = np.tile(x_range, [height, 1])
-        y_grid = np.tile(y_range, [width, 1]).T
-
-        for x in range(width):
-            for y in range(height):
-                cv2.circle(self._img, (int(x_grid[y, x]), int(y_grid[y, x])), 1, (0, 255, 0))
-        return self._img 
-        '''
         wangle = (180 - wFOV) / 2.0
         w_len = 2 * RADIUS * np.sin(np.radians(wFOV / 2.0)) / np.sin(np.radians(wangle))
         w_interval = w_len / (width - 1)
@@ -75,7 +45,6 @@ class Equirectangular:
         xyz[:, :, 1] = (RADIUS / D * y_map)[:, :]
         xyz[:, :, 2] = (RADIUS / D * z_map)[:, :]
         
-        #[R, _] = cv2.Rodrigues(np.array([0, 1, 0], np.float32) * np.radians(-PHI))
         y_axis = np.array([0.0, 1.0, 0.0], np.float32)
         z_axis = np.array([0.0, 0.0, 1.0], np.float32)
         [R1, _] = cv2.Rodrigues(z_axis * np.radians(THETA))

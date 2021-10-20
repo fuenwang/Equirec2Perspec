@@ -53,12 +53,11 @@ class Equirectangular:
             ], np.float32)
         K_inv = np.linalg.inv(K)
         
-        x = np.arange(width)[None, :, None]
-        x = np.tile(x, [height, 1, 1])
-        y = np.arange(height)[:, None, None]
-        y = np.tile(y, [1, width, 1])
+        x = np.arange(width)
+        y = np.arange(height)
+        x, y = np.meshgrid(x, y)
         z = np.ones_like(x)
-        xyz = np.concatenate([x, y, z], axis=-1)
+        xyz = np.concatenate([x[..., None], y[..., None], z[..., None]], axis=-1)
         xyz = xyz @ K_inv.T
 
         y_axis = np.array([0.0, 1.0, 0.0], np.float32)
